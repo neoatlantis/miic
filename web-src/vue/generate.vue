@@ -88,22 +88,13 @@
 </template>
 <script>
 import * as openpgp from "openpgp";
+import qa_to_key from "app/qa_to_key";
 import triplesec from "triplesec/browser/triplesec.js";
-import { Buffer } from "buffer";
 
 
 async function generate_ciphertext(qa, master_password, payload, on_progress){
     let questions = qa.map((e)=>e.question);
-    let answers = qa.map((e)=>e.answer).map((a)=>{
-        return a
-            .toLowerCase()
-            .replace(/[^0-9a-z]/g, " ")
-            .split(" ")
-            .filter((e)=>e!="")
-            .join(" ")
-        ;
-    });
-    let triplesec_key = answers.join("|");
+    let triplesec_key = qa_to_key(qa);
 
     let triplesec_encrypted = await new Promise((resolve, reject)=>{
         triplesec.encrypt({
@@ -129,7 +120,6 @@ async function generate_ciphertext(qa, master_password, payload, on_progress){
         message: pgp_message,
         passwords: [master_password.toString(),],
     });
-    console.log(master_password.toString());
 
     return pgp_encrypted;
 }
